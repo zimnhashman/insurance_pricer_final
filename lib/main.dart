@@ -10,9 +10,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Insurance Calculator',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        textTheme: const TextTheme(
+          headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
       ),
       initialRoute: '/',
       routes: {
@@ -33,42 +37,77 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Insurance Calculator')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/motorVehicle');
-              },
-              child: const Text('Motor Vehicle Insurance'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/homeownerProperty');
-              },
-              child: const Text('Homeowner Insurance'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/farm');
-              },
-              child: const Text('Farm Insurance'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/cellphone');
-              },
-              child: const Text('Cellphone Insurance'),
-            ),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade400, Colors.blue.shade700],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/motorVehicle');
+                },
+                icon: const Icon(Icons.directions_car),
+                label: const Text('Motor Vehicle Insurance'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/homeownerProperty');
+                },
+                icon: const Icon(Icons.home),
+                label: const Text('Homeowner Insurance'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/farm');
+                },
+                icon: const Icon(Icons.agriculture),
+                label: const Text('Farm Insurance'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/cellphone');
+                },
+                icon: const Icon(Icons.phone_android),
+                label: const Text('Cellphone Insurance'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  backgroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// Motor Vehicle Insurance Screen
 class MotorVehicleScreen extends StatefulWidget {
   const MotorVehicleScreen({super.key});
 
@@ -103,35 +142,53 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
       appBar: AppBar(title: const Text('Motor Vehicle Insurance')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: ListView(
           children: [
-            TextField(
-              controller: _vehicleValueController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Enter Vehicle Value',
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _vehicleValueController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Vehicle Value',
+                        prefixIcon: Icon(Icons.attach_money),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _driverAgeController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Driver Age',
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _calculatePremium,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        backgroundColor: Colors.blue.shade600,
+                      ),
+                      child: const Text('Calculate Premium'),
+                    ),
+                    const SizedBox(height: 20),
+                    if (_result.isNotEmpty)
+                      Text(
+                        _result,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                  ],
+                ),
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _driverAgeController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Enter Driver Age',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _calculatePremium,
-              child: const Text('Calculate Premium'),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _result,
-              style: const TextStyle(fontSize: 20),
             ),
           ],
         ),
@@ -140,7 +197,6 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
   }
 }
 
-// Homeowner Insurance Screen
 class HomeownerPropertyScreen extends StatefulWidget {
   const HomeownerPropertyScreen({super.key});
 
@@ -175,35 +231,53 @@ class _HomeownerPropertyScreenState extends State<HomeownerPropertyScreen> {
       appBar: AppBar(title: const Text('Homeowner Insurance')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: ListView(
           children: [
-            TextField(
-              controller: _propertyValueController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Enter Property Value',
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _propertyValueController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Property Value',
+                        prefixIcon: Icon(Icons.attach_money),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _locationRiskController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Location Risk Score (0-1)',
+                        prefixIcon: Icon(Icons.location_on),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _calculatePremium,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        backgroundColor: Colors.blue.shade600,
+                      ),
+                      child: const Text('Calculate Premium'),
+                    ),
+                    const SizedBox(height: 20),
+                    if (_result.isNotEmpty)
+                      Text(
+                        _result,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                  ],
+                ),
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _locationRiskController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Enter Location Risk Score (0-1)',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _calculatePremium,
-              child: const Text('Calculate Premium'),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _result,
-              style: const TextStyle(fontSize: 20),
             ),
           ],
         ),
@@ -212,7 +286,6 @@ class _HomeownerPropertyScreenState extends State<HomeownerPropertyScreen> {
   }
 }
 
-// Farm Insurance Screen
 class FarmScreen extends StatefulWidget {
   const FarmScreen({super.key});
 
@@ -247,35 +320,53 @@ class _FarmScreenState extends State<FarmScreen> {
       appBar: AppBar(title: const Text('Farm Insurance')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: ListView(
           children: [
-            TextField(
-              controller: _farmValueController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Enter Farm Value',
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _farmValueController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Farm Value',
+                        prefixIcon: Icon(Icons.attach_money),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _livestockCountController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Livestock Count',
+                        prefixIcon: Icon(Icons.pets),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _calculatePremium,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        backgroundColor: Colors.blue.shade600,
+                      ),
+                      child: const Text('Calculate Premium'),
+                    ),
+                    const SizedBox(height: 20),
+                    if (_result.isNotEmpty)
+                      Text(
+                        _result,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                  ],
+                ),
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _livestockCountController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Enter Number of Livestock',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _calculatePremium,
-              child: const Text('Calculate Premium'),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _result,
-              style: const TextStyle(fontSize: 20),
             ),
           ],
         ),
@@ -284,7 +375,6 @@ class _FarmScreenState extends State<FarmScreen> {
   }
 }
 
-// Cellphone Insurance Screen
 class CellphoneScreen extends StatefulWidget {
   const CellphoneScreen({super.key});
 
@@ -317,26 +407,43 @@ class _CellphoneScreenState extends State<CellphoneScreen> {
       appBar: AppBar(title: const Text('Cellphone Insurance')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: ListView(
           children: [
-            TextField(
-              controller: _phoneValueController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Enter Phone Value',
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _phoneValueController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Enter Phone Value',
+                        prefixIcon: Icon(Icons.phone),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _calculatePremium,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                       backgroundColor: Colors.blue.shade600,
+                      ),
+                      child: const Text('Calculate Premium'),
+                    ),
+                    const SizedBox(height: 20),
+                    if (_result.isNotEmpty)
+                      Text(
+                        _result,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                  ],
+                ),
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _calculatePremium,
-              child: const Text('Calculate Premium'),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _result,
-              style: const TextStyle(fontSize: 20),
             ),
           ],
         ),
@@ -345,10 +452,8 @@ class _CellphoneScreenState extends State<CellphoneScreen> {
   }
 }
 
-// Premium Calculation Logic
 class PremiumCalculator {
   static double calculateMotorVehiclePremium(double vehicleValue, int driverAge) {
-    // Example calculation logic
     double basePremium = vehicleValue * 0.05;
     if (driverAge < 25) {
       basePremium *= 1.2; // Increase for young drivers
@@ -357,17 +462,14 @@ class PremiumCalculator {
   }
 
   static double calculateHomeownerPremium(double propertyValue, double locationRisk) {
-    // Example calculation logic
     return propertyValue * 0.02 + (locationRisk * 100);
   }
 
   static double calculateFarmPremium(double farmValue, int livestockCount) {
-    // Example calculation logic
     return farmValue * 0.03 + (livestockCount * 50);
   }
 
   static double calculateCellphonePremium(double phoneValue) {
-    // Example calculation logic
     return phoneValue * 0.1;
   }
 }
