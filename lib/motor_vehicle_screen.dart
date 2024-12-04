@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'car_api_service.dart'; // Make sure you have the CarApiService implemented
+import 'services/car_api_service.dart'; // Make sure you have the CarApiService implemented
 
 class MotorVehicleScreen extends StatefulWidget {
   const MotorVehicleScreen({super.key});
@@ -76,14 +76,14 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
                   _selectedModel = newValue;
                 });
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _vehicleValueController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Enter Vehicle Value',
               ),
@@ -92,7 +92,7 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
             const SizedBox(height: 20),
             TextField(
               controller: _driverAgeController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Enter Driver Age',
               ),
@@ -129,5 +129,9 @@ class PremiumCalculator {
     // Additional calculations can be added here based on other factors
 
     return basePremium;
+  }
+
+  static double calculateCellphonePremium(double phoneValue) {
+      return phoneValue * 0.14;
   }
 }
