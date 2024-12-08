@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:insurance_pricer/motor_vehicle_screen.dart';
 import 'package:insurance_pricer/services/pdf_report.dart';
 import 'package:insurance_pricer/widgets/textField.dart';
-
 
 class FarmScreen extends StatefulWidget {
   const FarmScreen({super.key});
@@ -14,6 +12,10 @@ class FarmScreen extends StatefulWidget {
 class _FarmScreenState extends State<FarmScreen> {
   final TextEditingController _farmValueController = TextEditingController();
   final TextEditingController _livestockCountController = TextEditingController();
+  final TextEditingController _equipmentValueController = TextEditingController();
+  final TextEditingController _structuresValueController = TextEditingController();
+  final TextEditingController _acreageController = TextEditingController();
+
   String _result = '';
   String _errorMessage = '';
   List<String> _previousResults = [];
@@ -21,17 +23,56 @@ class _FarmScreenState extends State<FarmScreen> {
   void _calculatePremium() {
     final double? farmValue = double.tryParse(_farmValueController.text);
     final int? livestockCount = int.tryParse(_livestockCountController.text);
+    final double? equipmentValue = double.tryParse(_equipmentValueController.text);
+    final double? structuresValue = double.tryParse(_structuresValueController.text);
+    final double? acreage = double.tryParse(_acreageController.text);
 
-    if (farmValue == null || farmValue <= 0 || livestockCount == null || livestockCount < 0) {
+    // Validation checks
+    if (farmValue == null || farmValue <= 0) {
       setState(() {
-        _errorMessage = 'Please enter valid positive values for farm value and non-negative livestock count.';
+        _errorMessage = 'Please enter a valid positive value for farm value.';
+        _result = '';
+      });
+      return;
+    }
+    if (livestockCount == null || livestockCount < 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid non-negative livestock count.';
+        _result = '';
+      });
+      return;
+    }
+    if (equipmentValue == null || equipmentValue < 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid non-negative value for equipment.';
+        _result = '';
+      });
+      return;
+    }
+    if (structuresValue == null || structuresValue < 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid non-negative value for farm structures.';
+        _result = '';
+      });
+      return;
+    }
+    if (acreage == null || acreage <= 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid positive acreage value.';
         _result = '';
       });
       return;
     }
 
+    // Calculation
     try {
-      final double premium = PremiumCalculator.calculateFarmPremium(farmValue, livestockCount);
+      final double premium = PremiumCalculator.calculateFarmPremium(
+        farmValue,
+        livestockCount,
+        equipmentValue,
+        structuresValue,
+        acreage,
+      );
       setState(() {
         _result = 'Calculated Premium: \$${premium.toStringAsFixed(2)}';
         _previousResults.add(_result);
@@ -46,7 +87,6 @@ class _FarmScreenState extends State<FarmScreen> {
 
   void _generatePdf() {
     if (_result.isNotEmpty) {
-      // Extract the premium amount from the result
       double premiumValue = double.tryParse(_result.split('\$')[1]) ?? 0;
       PdfReport().generateReport('Farm Insurance', premiumValue);
     }
@@ -71,6 +111,12 @@ class _FarmScreenState extends State<FarmScreen> {
                     const SizedBox(height: 20),
                     buildTextField(_livestockCountController, 'Enter Livestock Count', Icons.pets, TextInputType.number),
                     const SizedBox(height: 20),
+                    buildTextField(_equipmentValueController, 'Enter Equipment Value', Icons.account_tree_sharp, TextInputType.number),
+                    const SizedBox(height: 20),
+                    buildTextField(_structuresValueController, 'Enter Structures Value', Icons.house, TextInputType.number),
+                    const SizedBox(height: 20),
+                    buildTextField(_acreageController, 'Enter Acreage', Icons.landscape, TextInputType.number),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _calculatePremium,
                       style: ElevatedButton.styleFrom(
@@ -87,7 +133,7 @@ class _FarmScreenState extends State<FarmScreen> {
                       Text(_result, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: _generatePdf, // Call PDF generation
+                      onPressed: _generatePdf,
                       child: const Text('Generate PDF Report'),
                     ),
                     const SizedBox(height: 20),
@@ -124,11 +170,8 @@ class PremiumCalculator {
     return propertyValue * 0.02 + (locationRisk * 100);
   }
 
-  static double calculateFarmPremium(double farmValue, int livestockCount) {
-    return farmValue * 0.03 + (livestockCount * 50);
+  static double calculateFarmPremium(double farmValue, int livestockCount, double equipmentValue, double structuresValue, double acreage) {
+    return (farmValue * 0.03) + (livestockCount * 50) + (equipmentValue * 0.01) + (structuresValue * 0.02) + (acreage * 10);
   }
 
-  static double calculateCellphonePremium(double phoneValue) {
-    return phoneValue * 0.1;
-  }
 }

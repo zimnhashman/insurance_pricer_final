@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:insurance_pricer/services/pdf_report.dart';
 import 'package:insurance_pricer/widgets/textField.dart';
-import 'package:printing/printing.dart';
 
 
 class CellphoneScreen extends StatefulWidget {
@@ -13,13 +12,21 @@ class CellphoneScreen extends StatefulWidget {
 
 class _CellphoneScreenState extends State<CellphoneScreen> {
   final TextEditingController _phoneValueController = TextEditingController();
+  final TextEditingController _planFeaturesController = TextEditingController();
+  final TextEditingController _contractLengthController = TextEditingController();
+  final TextEditingController _creditScoreController = TextEditingController();
+
   String _result = '';
   String _errorMessage = '';
   List<String> _previousResults = [];
 
   void _calculatePremium() {
     final double? phoneValue = double.tryParse(_phoneValueController.text);
+    final int? planFeatures = int.tryParse(_planFeaturesController.text);
+    final int? contractLength = int.tryParse(_contractLengthController.text);
+    final double? creditScore = double.tryParse(_creditScoreController.text);
 
+    // Validation checks
     if (phoneValue == null || phoneValue <= 0) {
       setState(() {
         _errorMessage = 'Please enter a valid positive value for phone value.';
@@ -27,9 +34,31 @@ class _CellphoneScreenState extends State<CellphoneScreen> {
       });
       return;
     }
+    if (planFeatures == null || planFeatures < 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid non-negative number of plan features.';
+        _result = '';
+      });
+      return;
+    }
+    if (contractLength == null || contractLength <= 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid positive contract length.';
+        _result = '';
+      });
+      return;
+    }
+    if (creditScore == null || creditScore < 0 || creditScore > 850) {
+      setState(() {
+        _errorMessage = 'Please enter a valid credit score (0-850).';
+        _result = '';
+      });
+      return;
+    }
 
+    // Calculation
     try {
-      final double premium = calculateCellphonePremium(phoneValue);
+      final double premium = calculateCellphonePremium(phoneValue, planFeatures, contractLength, creditScore);
       setState(() {
         _result = 'Calculated Premium: \$${premium.toStringAsFixed(2)}';
         _previousResults.add(_result);
@@ -42,13 +71,17 @@ class _CellphoneScreenState extends State<CellphoneScreen> {
     }
   }
 
-  double calculateCellphonePremium(double phoneValue) {
-    return phoneValue * 0.13; // Your premium calculation logic
+  double calculateCellphonePremium(double phoneValue, int planFeatures, int contractLength, double creditScore) {
+    double basePremium = phoneValue * 0.13; // Base premium based on phone value
+    double featurePremium = planFeatures * 5; // Additional fee per feature
+    double contractAdjustment = (contractLength < 2) ? -10 : 10; // Adjust based on contract length
+    double creditAdjustment = (creditScore > 700) ? -10 : 0; // Adjust based on credit score
+
+    return basePremium + featurePremium + contractAdjustment + creditAdjustment;
   }
 
   void _generatePdf() {
     if (_result.isNotEmpty) {
-      // Extract the premium amount from the result
       double premiumValue = double.tryParse(_result.split('\$')[1]) ?? 0;
       PdfReport().generateReport('Cellphone Insurance', premiumValue);
     }
@@ -70,6 +103,9 @@ class _CellphoneScreenState extends State<CellphoneScreen> {
                 child: Column(
                   children: [
                     buildTextField(_phoneValueController, 'Enter Phone Value', Icons.phone, TextInputType.number),
+                    buildTextField(_planFeaturesController, 'Number of Plan Features', Icons.featured_play_list, TextInputType.number),
+                    buildTextField(_contractLengthController, 'Contract Length (years)', Icons.access_time, TextInputType.number),
+                    buildTextField(_creditScoreController, 'Credit Score', Icons.credit_score, TextInputType.number),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _calculatePremium,
@@ -87,7 +123,7 @@ class _CellphoneScreenState extends State<CellphoneScreen> {
                       Text(_result, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: _generatePdf, // Call PDF generation
+                      onPressed: _generatePdf,
                       child: const Text('Generate PDF Report'),
                     ),
                     const SizedBox(height: 20),

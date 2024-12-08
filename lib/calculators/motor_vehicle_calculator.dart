@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:insurance_pricer/calculators/farm.dart';
-import 'package:insurance_pricer/services/pdf_report.dart'; // Ensure this path is correct
-import 'package:printing/printing.dart';
+import 'package:insurance_pricer/services/pdf_report.dart';
 
 class MotorVehicleScreen extends StatefulWidget {
   const MotorVehicleScreen({super.key});
@@ -13,6 +11,13 @@ class MotorVehicleScreen extends StatefulWidget {
 class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
   final TextEditingController _vehicleValueController = TextEditingController();
   final TextEditingController _driverAgeController = TextEditingController();
+  final TextEditingController _vehicleAgeController = TextEditingController();
+  final TextEditingController _vehicleTypeController = TextEditingController();
+  final TextEditingController _mileageController = TextEditingController();
+  final TextEditingController _drivingExperienceController = TextEditingController();
+  final TextEditingController _claimsHistoryController = TextEditingController();
+  final TextEditingController _safetyFeaturesController = TextEditingController();
+
   String _result = '';
   String _errorMessage = '';
   List<String> _previousResults = [];
@@ -20,17 +25,69 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
   void _calculatePremium() {
     final double? vehicleValue = double.tryParse(_vehicleValueController.text);
     final int? driverAge = int.tryParse(_driverAgeController.text);
+    final int? vehicleAge = int.tryParse(_vehicleAgeController.text);
+    final String vehicleType = _vehicleTypeController.text.trim();
+    final int? mileage = int.tryParse(_mileageController.text);
+    final int? drivingExperience = int.tryParse(_drivingExperienceController.text);
+    final int? claimsHistory = int.tryParse(_claimsHistoryController.text);
+    final bool? safetyFeatures = _safetyFeaturesController.text.toLowerCase() == 'yes';
 
-    if (vehicleValue == null || vehicleValue <= 0 || driverAge == null || driverAge < 0) {
+    // Validation checks
+    if (vehicleValue == null || vehicleValue <= 0) {
       setState(() {
-        _errorMessage = 'Please enter valid positive values for vehicle value and non-negative age.';
+        _errorMessage = 'Please enter a valid positive value for vehicle value.';
+        _result = '';
+      });
+      return;
+    }
+    if (driverAge == null || driverAge < 16) {
+      setState(() {
+        _errorMessage = 'Please enter a valid age (16 or older) for the driver.';
+        _result = '';
+      });
+      return;
+    }
+    if (vehicleAge == null || vehicleAge < 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid non-negative age for the vehicle.';
+        _result = '';
+      });
+      return;
+    }
+    if (mileage == null || mileage < 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid non-negative mileage.';
+        _result = '';
+      });
+      return;
+    }
+    if (drivingExperience == null || drivingExperience < 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid non-negative value for driving experience.';
+        _result = '';
+      });
+      return;
+    }
+    if (claimsHistory == null || claimsHistory < 0) {
+      setState(() {
+        _errorMessage = 'Please enter a valid non-negative value for claims history.';
         _result = '';
       });
       return;
     }
 
+    // Calculation
     try {
-      final double premium = PremiumCalculator.calculateMotorVehiclePremium(vehicleValue, driverAge);
+      final double premium = PremiumCalculator.calculateMotorVehiclePremium(
+        vehicleValue,
+        driverAge,
+        vehicleAge,
+        vehicleType,
+        mileage,
+        drivingExperience,
+        claimsHistory,
+        safetyFeatures ?? false,
+      );
       setState(() {
         _result = 'Calculated Premium: \$${premium.toStringAsFixed(2)}';
         _previousResults.add(_result);
@@ -45,7 +102,6 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
 
   void _generatePdf() {
     if (_result.isNotEmpty) {
-      // Extract the premium amount from the result
       double premiumValue = double.tryParse(_result.split('\$')[1]) ?? 0;
       PdfReport().generateReport('Motor Vehicle Insurance', premiumValue);
     }
@@ -70,6 +126,18 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
                     const SizedBox(height: 20),
                     _buildTextField(_driverAgeController, 'Enter Driver Age', Icons.person, TextInputType.number),
                     const SizedBox(height: 20),
+                    _buildTextField(_vehicleAgeController, 'Enter Vehicle Age', Icons.calendar_today, TextInputType.number),
+                    const SizedBox(height: 20),
+                    _buildTextField(_vehicleTypeController, 'Enter Vehicle Type (e.g., SUV, Sedan)', Icons.directions_car, TextInputType.text),
+                    const SizedBox(height: 20),
+                    _buildTextField(_mileageController, 'Enter Annual Mileage', Icons.speed, TextInputType.number),
+                    const SizedBox(height: 20),
+                    _buildTextField(_drivingExperienceController, 'Enter Driving Experience (years)', Icons.access_time, TextInputType.number),
+                    const SizedBox(height: 20),
+                    _buildTextField(_claimsHistoryController, 'Enter Number of Past Claims', Icons.history, TextInputType.number),
+                    const SizedBox(height: 20),
+                    _buildTextField(_safetyFeaturesController, 'Safety Features (yes/no)', Icons.security, TextInputType.text),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _calculatePremium,
                       style: ElevatedButton.styleFrom(
@@ -86,7 +154,10 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
                       Text(_result, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: _generatePdf, // Call PDF generation
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      onPressed: _generatePdf,
                       child: const Text('Generate PDF Report'),
                     ),
                     const SizedBox(height: 20),
@@ -118,5 +189,41 @@ class _MotorVehicleScreenState extends State<MotorVehicleScreen> {
       ),
       keyboardType: type,
     );
+  }
+}
+
+// Premium Calculation Logic
+class PremiumCalculator {
+  static double calculateMotorVehiclePremium(
+      double vehicleValue,
+      int driverAge,
+      int vehicleAge,
+      String vehicleType,
+      int mileage,
+      int drivingExperience,
+      int claimsHistory,
+      bool safetyFeatures,
+      ) {
+    double basePremium = vehicleValue * 0.05; // Base premium based on vehicle value
+
+    // Adjustments based on additional factors
+    if (driverAge < 25) {
+      basePremium *= 1.2; // Increase for younger drivers
+    }
+    if (vehicleAge > 10) {
+      basePremium *= 1.1; // Increase for older vehicles
+    }
+    if (mileage > 15000) {
+      basePremium += (mileage - 15000) * 0.01; // Increase for high mileage
+    }
+    if (drivingExperience < 2) {
+      basePremium *= 1.15; // Increase for less experienced drivers
+    }
+    basePremium += claimsHistory * 50; // Increase for past claims
+    if (safetyFeatures) {
+      basePremium -= 100; // Decrease for safety features
+    }
+
+    return basePremium;
   }
 }
