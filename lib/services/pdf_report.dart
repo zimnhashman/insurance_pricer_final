@@ -1,6 +1,6 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+import 'package:printing/printing.dart' show Printing;
 
 class PdfReport {
   Future<void> generateReport(String insuranceType, double premium) async {
